@@ -159,9 +159,6 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# Ignoring .env files
-NLP_model/.env.*
-Whatsapp_API/.env.*
 # Ignoring everthing inside logs
 NLP_model/logs/*
 Whatsapp_API/logs/*
