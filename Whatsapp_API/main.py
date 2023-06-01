@@ -5,13 +5,13 @@ import dotenv
 import os
 
 # Loading the secret variables
-dotenv.load_dotenv(dotenv_path=f"config_files/.{os.environ.get('ENVIRONMENT')}.env")
+load_env = dotenv.load_dotenv(dotenv_path=f"config_files/.env.{os.environ.get('ENVIRONMENT')}")
 
 app = FastAPI(
     title="Whatsapp API",
     description="An API for sending and receiving messages from Whatsapp",
     version="0.1.0",
-    root_path=os.environ.get('ROOT_PATH')
+    root_path=os.environ.get("ROOT_PATH"),
 )
 
 
