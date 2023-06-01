@@ -11,6 +11,7 @@ app = FastAPI(
     title="Whatsapp API",
     description="An API for sending and receiving messages from Whatsapp",
     version="0.1.0",
+    openapi_url=os.path.join(os.environ.get("ROOT_PATH"), "openapi.json"),
     root_path=os.environ.get("ROOT_PATH"),
 )
 
