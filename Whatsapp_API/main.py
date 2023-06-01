@@ -20,7 +20,7 @@ def read_item(item_id: Union[int, str]):
     return {"item_id": item_id}
 
 
-@app.get("/webhooks")
+@app.get("/webhook")
 def read_webhooks(
         hub_mode: Annotated[str | None, Query(alias="hub.mode")] = None,
         hub_challenge: Annotated[str | None, Query(alias="hub.challenge")] = None,
