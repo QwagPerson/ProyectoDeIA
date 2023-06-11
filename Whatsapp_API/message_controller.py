@@ -15,6 +15,7 @@ async def echo_message(to, reply_message):
     data = {
         "messaging_product": "whatsapp",
         "to": to,
+        "type": "text",
         "text": {"body": reply_message},
     }
     headers = {
@@ -23,12 +24,15 @@ async def echo_message(to, reply_message):
     api_url = f"https://graph.facebook.com/v17.0/{PHONE_NUMBER_ID}/messages?access_token={WHATSAPP_TOKEN}"
 
     async with httpx.AsyncClient() as client:
-        r = await client.post(api_url, data=data)
-        print(r)
+        print("Sending message")
+        print(data)
+        print(headers)
+        r = await client.post(api_url, data=data, headers=headers)
+        print(str(r.status_code) + " " + r.text)
     return r
 
 
-def dispatch_messages(request, func):
+async def dispatch_messages(request, func):
     for entry in request.entry:
         for change in entry.changes:
             value = change.value
@@ -36,7 +40,7 @@ def dispatch_messages(request, func):
             for message in value.messages:
                 if message.type == "text":
                     reply_message = f"You said {message.text}"
-                    echo_message(to, reply_message)
+                    await echo_message(to, reply_message)
                 else:
                     reply_message = f"Sorry, I don't know how to handle {message.type} messages"
-                    echo_message(to, reply_message)
+                    await echo_message(to, reply_message)
