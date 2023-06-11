@@ -15,6 +15,7 @@ app = FastAPI(
     root_path=os.environ.get("ROOT_PATH"),
 )
 
+
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
@@ -40,5 +41,5 @@ def read_webhooks(
 @app.post("/webhook")
 def notice_change(request: Request):
     # Print the request body
-    print(request.body)
+    print(request)
     return Response(status_code=204)
