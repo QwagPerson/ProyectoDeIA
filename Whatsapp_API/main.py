@@ -20,8 +20,8 @@ app = FastAPI(
 )
 
 # Defining the loggers
-logger_info = logging.getLogger("uvicorn.info")  # Main logger for info or warning messages
-logger_error = logging.getLogger("uvicorn.error")  # Logger for error or debug messages
+logger_info = logging.getLogger(os.environ.get('INFO_LOGGER'))  # Main logger for info or warning messages
+logger_error = logging.getLogger(os.environ.get('ERROR_LOGGER'))  # Logger for error or debug messages
 
 
 @app.get("/")
@@ -49,6 +49,6 @@ def read_webhooks(
 @app.post("/webhook")
 async def notice_change(request: WebhookRequest):
     # Print the request body
-    logger_info.warn(request)
+    logger_info.warning(request)
     logger_error.debug(request)
     return Response(status_code=204)

@@ -82,8 +82,14 @@ class WebhookRequest(BaseModel):
     entry: list[Entry]
 
     def __str__(self):
-        return f"WebhookRequest(Amount of entries={len(self.entry)}, type of entries=" \
-               f"{[e.changes[0].value.messages[0].type for e in self.entry]}"
+        type_of_msgs = []
+        for entry in self.entry:
+            for change in entry.changes:
+                for message in change.value.messages:
+                    type_of_msgs.append(message.type)
+
+        return f"WebhookRequest(Amount of entries={len(self.entry)}, type of messages received=" \
+               f"{type_of_msgs})"
 
     def __repr__(self):
         return self.__str__()
