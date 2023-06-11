@@ -1,9 +1,13 @@
 import datetime
 import os
+import dotenv
+
+# Loading the environment variables
+load_env = dotenv.load_dotenv(dotenv_path=f"config_files/.env.{os.environ.get('ENVIRONMENT')}")
 
 # Non logging stuff
-bind = "localhost:8080"
-workers = 2
+bind = f"localhost:{os.environ.get('PORT')}"
+workers = int(os.environ.get("NUM_WORKERS"))
 worker_class = "uvicorn.workers.UvicornWorker"
 
 # Logging stuff
@@ -26,7 +30,7 @@ errorlog_name = f"{curr_datetime_str}.gunicorn.access.log"
 errorlog = f"./logs/gunicorn/{errorlog_name}"
 
 # Whether to send Fast API output to the error log
-capture_output = True
+capture_output = bool(os.environ.get("CAPTURE_API_OUTPUT"))
 
 # Check if symlink exists pointing to the latest log file
 last_acc_link = "./logs/gunicorn/latest.access.log"
@@ -40,6 +44,5 @@ if os.path.exists(last_err_link):
 os.symlink(errorlog_name, last_err_link)
 
 # How verbose the Gunicorn error logs should be
-loglevel = "info"
+loglevel = os.environ.get("LOG_LEVEL")
 
-ROOT_PATH = "/api"

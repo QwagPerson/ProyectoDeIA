@@ -4,7 +4,7 @@ from fastapi.responses import Response
 import dotenv
 import os
 
-# Loading the secret variables
+# Loading the environment variables
 load_env = dotenv.load_dotenv(dotenv_path=f"config_files/.env.{os.environ.get('ENVIRONMENT')}")
 
 app = FastAPI(
@@ -38,12 +38,12 @@ def read_webhooks(
 
     # Responding to the challenge
     if hub_mode == "subscribe" and hub_challenge:
-        return {"hub.challenge": hub_challenge}
+        return int(hub_challenge)
 
     return {"Status": "Failure"}
 
 
-@app.post("/webhooks")
+@app.post("/webhook")
 def notice_change(request: Request):
     # Print the request body
     print(request.body)
