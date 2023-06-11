@@ -15,15 +15,9 @@ app = FastAPI(
     root_path=os.environ.get("ROOT_PATH"),
 )
 
-
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
-
-
-@app.get("/items/{item_id}")
-def read_item(item_id: Union[int, str]):
-    return {"item_id": item_id}
 
 
 @app.get("/webhook")
