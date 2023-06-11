@@ -41,5 +41,5 @@ def read_webhooks(
 @app.post("/webhook")
 def notice_change(request: Request):
     # Print the request body
-    print(request)
+    print(request.body())
     return Response(status_code=204)
