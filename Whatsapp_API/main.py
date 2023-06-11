@@ -4,6 +4,8 @@ from fastapi.responses import Response
 import dotenv
 import os
 
+from data_models import WebhookRequest
+
 # Loading the environment variables
 load_env = dotenv.load_dotenv(dotenv_path=f"config_files/.env.{os.environ.get('ENVIRONMENT')}")
 
@@ -39,8 +41,7 @@ def read_webhooks(
 
 
 @app.post("/webhook")
-async def notice_change(request: Request):
+async def notice_change(request: WebhookRequest):
     # Print the request body
-    body = await request.body()
-    print(body)
+    print(request)
     return Response(status_code=204)
