@@ -6,7 +6,8 @@ import os
 import logging
 
 from data_models import WebhookRequest
-from message_controller import dispatch_messages, echo_message
+from message_controller import dispatch_messages, respond_according_to_message_class
+
 # Loading the environment variables
 load_env = dotenv.load_dotenv(dotenv_path=f"config_files/.env.{os.environ.get('ENVIRONMENT')}")
 
@@ -49,5 +50,5 @@ def read_webhooks(
 @app.post("/webhook")
 async def handle_webhook_request(request: WebhookRequest):
     logger_error.debug(f"Received request: {request}")
-    await dispatch_messages(request, echo_message)
+    await dispatch_messages(request, respond_according_to_message_class)
     return Response(status_code=204)
