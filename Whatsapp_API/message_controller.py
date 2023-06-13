@@ -2,43 +2,57 @@ import json
 import dotenv
 import os
 import httpx
+import logging
+import json
 
 # load the environment variables
 load_env = dotenv.load_dotenv(dotenv_path=f"config_files/.env.{os.environ.get('ENVIRONMENT')}")
+
+# Defining the loggers
+logger_info = logging.getLogger(os.environ.get('INFO_LOGGER'))  # Main logger for info or warning messages
+logger_error = logging.getLogger(os.environ.get('ERROR_LOGGER'))  # Logger for error or debug messages
 
 # Define constants
 WHATSAPP_TOKEN = os.environ.get("WHATSAPP_TOKEN")
 PHONE_NUMBER_ID = os.environ.get("PHONE_NUMBER_ID")
 CLASSIFIER_APP_URL = os.environ.get("CLASSIFIER_APP_URL")
 CLASSIFIER_APP_KEY = os.environ.get("CLASSIFIER_APP_KEY")
+
+# Define the answer map
 ANSWER_MAP = {
-    "Pedir hora": "Buscando una hora... \n"
-                  "Encontré una hora para el 10 de agosto a las 10:00. \n",
-    "Reagendar hora": "Reagendando hora, por favor espere... \n"
-                      "La hora puede ser reagendada para el 14 de agosto a las 09:25. \n"
-                      "¿Desea reagendar la hora?",
-    "No asistiré": "La hora ha sido cancelada.",
-    "Asistiré": "La hora ha sido confirmada.",
+    3: "Buscando una hora... \n"
+       "Encontré una hora para el 10 de agosto a las 10:00. \n",
+    2: "Reagendando hora, por favor espere... \n"
+       "La hora puede ser reagendada para el 14 de agosto a las 09:25. \n"
+       "¿Desea reagendar la hora?",
+    1: "La hora ha sido cancelada.",
+    0: "La hora ha sido confirmada.",
 }
 
 
 async def query_classifier_app(text):
     data = {
-        "text": text
+        "body": text.body
     }
+    data = json.dumps(data)
     headers = {
         "Content-Type": "application/json",
         "Secret-Key": CLASSIFIER_APP_KEY
     }
 
-    api_url = f"http://classifier_app:8000/predict"
+    api_url = f"{CLASSIFIER_APP_URL}/predict"
 
     async with httpx.AsyncClient() as client:
         r = await client.post(api_url, data=data, headers=headers)
-    return r.json()["class"]
+
+    logger_error.debug(f"Text query to classifier app: '{text.body}'")
+    logger_error.debug(f"Response from classifier app: {r.json()}")
+    logger_error.debug(f"Response status code: {r.status_code}")
+    return r.json()["prediccion"][0]
 
 
 async def echo_message(to, reply_message):
+    logger_error.debug(f"Sending message to {to}: {reply_message}")
     data = {
         "messaging_product": "whatsapp",
         "to": to,
