@@ -3,10 +3,15 @@ from fastapi import FastAPI, Query, Request
 from fastapi.responses import Response
 import dotenv
 import os
+import logging
+
+from data_models import WebhookRequest
+from message_controller import dispatch_messages, respond_according_to_message_class
 
 # Loading the environment variables
 load_env = dotenv.load_dotenv(dotenv_path=f"config_files/.env.{os.environ.get('ENVIRONMENT')}")
 
+# Creating the app
 app = FastAPI(
     title="Whatsapp API",
     description="An API for sending and receiving messages from Whatsapp",
@@ -15,15 +20,14 @@ app = FastAPI(
     root_path=os.environ.get("ROOT_PATH"),
 )
 
+# Defining the loggers
+logger_info = logging.getLogger(os.environ.get('INFO_LOGGER'))  # Main logger for info or warning messages
+logger_error = logging.getLogger(os.environ.get('ERROR_LOGGER'))  # Logger for error or debug messages
+
 
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
-
-
-@app.get("/items/{item_id}")
-def read_item(item_id: Union[int, str]):
-    return {"item_id": item_id}
 
 
 @app.get("/webhook")
@@ -44,7 +48,7 @@ def read_webhooks(
 
 
 @app.post("/webhook")
-def notice_change(request: Request):
-    # Print the request body
-    print(request.body)
+async def handle_webhook_request(request: WebhookRequest):
+    logger_error.debug(f"Received request: {request}")
+    await dispatch_messages(request, respond_according_to_message_class)
     return Response(status_code=204)

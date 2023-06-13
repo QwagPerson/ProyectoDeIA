@@ -2,4 +2,4 @@
 
 source config_files/.env.dev
 export ENVIRONMENT=dev
-uvicorn main:app --reload --port ${PORT}
+uvicorn main:app --reload --port "${PORT}" --log-level "${LOG_LEVEL}"
