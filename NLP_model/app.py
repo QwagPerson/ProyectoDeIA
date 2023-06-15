@@ -17,8 +17,6 @@ def load_model():
     return modelo
 
 
-
-
 @app.post("/predict")
 def predict(data: dict):
     # Make a prediction
