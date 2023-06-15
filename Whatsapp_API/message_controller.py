@@ -31,10 +31,9 @@ ANSWER_MAP = {
 
 
 async def query_classifier_app(text):
-    data = {
-        "body": text.body
-    }
+    data = [str(text.body)]
     data = json.dumps(data)
+    print(data)
     headers = {
         "Content-Type": "application/json",
         "Secret-Key": CLASSIFIER_APP_KEY
