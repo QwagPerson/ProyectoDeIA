@@ -18,10 +18,9 @@ def load_model():
 
 
 @app.post("/predict")
-def predict(data: dict):
+def predict(data: list):
     # Make a prediction
     prediccion = MODEL.predict(data)
-
     # Response with Json
     respuesta = {"prediccion": prediccion.tolist()}
     return JSONResponse(content=jsonable_encoder(respuesta))
