@@ -18,7 +18,7 @@ def load_model():
 
 
 @app.post("/predict")
-def predict(data: list[str]):
+def predict(data: list):
     # Make a prediction
     prediccion = MODEL.predict(data)
     # Response with Json
