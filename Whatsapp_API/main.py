@@ -5,8 +5,8 @@ import dotenv
 import os
 import logging
 
-from data_models import WebhookRequest
-from message_controller import dispatch_messages, respond_according_to_message_class
+from whatsapp_message_controller.data_models import WebhookRequest
+from bot.bot_poo import Bot
 
 # Loading the environment variables
 load_env = dotenv.load_dotenv(dotenv_path=f"config_files/.env.{os.environ.get('ENVIRONMENT')}")
@@ -24,6 +24,7 @@ app = FastAPI(
 logger_info = logging.getLogger(os.environ.get('INFO_LOGGER'))  # Main logger for info or warning messages
 logger_error = logging.getLogger(os.environ.get('ERROR_LOGGER'))  # Logger for error or debug messages
 
+current_bots = {}
 
 @app.get("/")
 def read_root():
@@ -50,5 +51,16 @@ def read_webhooks(
 @app.post("/webhook")
 async def handle_webhook_request(request: WebhookRequest):
     logger_error.debug(f"Received request: {request}")
-    await dispatch_messages(request, respond_according_to_message_class)
+    logger_error.debug(f"Received entries:")
+    for x in request.entry:
+        logger_error.debug(f"Entry: {x}")
+
+    # A partir de la request obtener el numero de telefono y el nombre del usuario
+    # Crear un bot con el numero de telefono y el nombre del usuario o cargarlo de la lista de bots
+
+    # parseo
+    #await bot.action('asdsa')
+
+    #bot.state != "-10"
+
     return Response(status_code=204)

@@ -1,5 +1,4 @@
-from pydantic import BaseModel, HttpUrl
-from typing import List, Union
+from pydantic import BaseModel
 
 
 class Profile(BaseModel):
