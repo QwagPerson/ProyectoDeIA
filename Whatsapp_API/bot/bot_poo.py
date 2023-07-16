@@ -2,6 +2,9 @@
 ## BOT in POO
 from mtranslate import translate
 import datefinder
+import datetime
+import torch
+from torch import nn
 
 # Using the function to translate spanish to english
 def sp_to_en(sentence):
@@ -12,13 +15,49 @@ def extract_dates(text):
     matches = datefinder.find_dates(text)
     for match in matches:
         formatted_date = match.strftime("%d-%m-%Y")
-        return formatted_date
+        return formatted_date  
+
+def transform_date_string(date_string):
+    # Parse the input string as a datetime object
+    date = datetime.strptime(date_string, '%d-%m-%Y')
+    
+    # Format the output string as "DAY NAME dd-mm-yyyy"
+    day_name = date.strftime('%A')
+
+    # Days Dict
+    day_dict = {
+        'Monday': 'Lunes',
+        'Tuesday': 'Martes',
+        'Wednesday': 'Miércoles',
+        'Thursday': 'Jueves',
+        'Friday': 'Viernes',
+        'Saturday': 'Sábado',
+        'Sunday': 'Domingo'
+    }
+    
+    # Replace Name
+    day_name = day_dict.get(day_name)
+
+    date_ = date.strftime(f'{day_name} %d-%m-%Y')
+
+    return date_
+
+
+
+def make_pred(data, model, tokenizer, device):
+  sf = nn.Softmax(dim=1)
+  tokenizer_result = tokenizer(data)
+  input_ids = torch.tensor(tokenizer_result["input_ids"]).to(device)
+  attention_mask = torch.tensor(tokenizer_result["attention_mask"]).to(device)
+  outputs = sf(model(input_ids, attention_mask).logits)
+  return torch.argmax(outputs, dim=1)
 
 class Bot:
-    def __init__(self, user_ID, user_name, model):
+    def __init__(self, user_ID, user_name, model, tokenizer, device):
         self.user_ID = user_ID
         self.user_name = user_name
         """
+        -10:error
         -1 : init
         0 : asistir
         1 : cancelar
@@ -30,7 +69,12 @@ class Bot:
         self.state = -1
         self.action_stage = 'init'
         self.error_count = 0
+        
         self.model = model
+        self.tokenizer = tokenizer
+        self.device = device
+
+        self.last_sms = ''
         
         # Try to clasify the first sms
         print(f'Buenos días {user_name}. Soy el BOT de la MUNI')
@@ -39,17 +83,18 @@ class Bot:
     clasify the sms with the model
     """
     def clasify(self, text):
-        # label = sel.model.classify(text)
-        label = int(text)
-        
+        label = make_pred([text], self.model, self.tokenizer, self.device)
+        #label = int(text)        
         if label == 4:
             self.error_count += 1
+            
             if self.error_count>=3:
                 self.contact_call_center()
+            
             else:
                 print('No logro entender tu mensaje, intenta ser un poco mas claro. Gracias!')
+
         else:
-            self.error_count = 0
             self.state = label
             self.manage_states()
 
@@ -73,8 +118,9 @@ class Bot:
 
             # Extraction of the date
             date = extract_dates(text_translated)
+            date_name = transform_date_string(date)
 
-            print(f'Entiendo que quiere una hora para {date}')
+            print(f'Entiendo que quiere una hora para {date_name}')
             
             self.action_stage = 'Por confirmar hora'
 
@@ -84,7 +130,7 @@ class Bot:
     """
     def contact_call_center(self):
         self.state = 'Error'
-        self.action_stage = 'Connecting Call Center'
+        self.action_stage = 'end'
         print('No pude entender tu mensaje')
         print("Contactando con Call Center...")
 
@@ -115,7 +161,10 @@ class Bot:
     """
     def user_confirmation(self, text):
         if text == 'yes':
+            [self.last_sms, self.state]
+
             self.action_stage = 'User Confirmed'
+            self.error_count = 0
             return 1
         else:
             self.action_stage = 'User Denied'
@@ -158,10 +207,16 @@ class Bot:
         if self.action_stage == 'User Denied':
             self.state = -1
             self.action_stage = 'init'
-            print(f'Por favor sea mas explicito con lo que desea realizar')
+            self.error_count += 1
+
+            if self.error_count>=3:
+                self.contact_call_center()
+            else:
+                print(f'Por favor sea mas explicito con lo que desea realizar')
 
     def manage_hour(self):
         print('Buscando Disponibilidad de ese dia')
+        self.action_stage = 'end'
         
 
     """
@@ -169,6 +224,7 @@ class Bot:
     """
     def confirm_hour(self):
         print("Confirmando hora...")
+        self.action_stage = 'end'
         return
     
     """
@@ -176,6 +232,7 @@ class Bot:
     """
     def cancel_hour(self):
         print("Cancelando hora...")
+        self.action_stage = 'end'
         return
     
     """
@@ -240,9 +297,7 @@ def test_select_date():
 def final():
     botcito = Bot("123","Nahuel",'model')
     
-    while botcito.action_stage != 'Connecting Call Center':
+    while botcito.action_stage != 'end':
         x = input('Val: ')
         botcito.action(x)
         
-
-final()
