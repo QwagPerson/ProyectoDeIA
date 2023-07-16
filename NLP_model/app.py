@@ -36,6 +36,7 @@ def predict(data: list):
     prediccion = make_pred(data, MODEL, TOKENIZER, device)
     # Response with Json
     respuesta = {"prediccion": prediccion.tolist()}
+    print(data, prediccion.tolist())
     return JSONResponse(content=jsonable_encoder(respuesta))
 
 if __name__ == "__main__":

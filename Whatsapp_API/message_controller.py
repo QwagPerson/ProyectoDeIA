@@ -20,6 +20,7 @@ CLASSIFIER_APP_KEY = os.environ.get("CLASSIFIER_APP_KEY")
 
 # Define the answer map
 ANSWER_MAP = {
+    4: "No te entendi ni mierdas xd aprende a hablar \n",
     3: "Buscando una hora... \n"
        "Encontré una hora para el 10 de agosto a las 10:00. \n",
     2: "Reagendando hora, por favor espere... \n"
@@ -31,7 +32,7 @@ ANSWER_MAP = {
 
 
 async def query_classifier_app(text):
-    data = [str(text.body)]
+    data = [str(text.body)[0:512]]
     data = json.dumps(data)
     print(data)
     headers = {
