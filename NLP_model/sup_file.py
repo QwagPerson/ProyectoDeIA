@@ -2,6 +2,8 @@ import pickle
 import re
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
+from torch import nn
+from transformers import AutoModelForSequenceClassification
 
 class PreProccesingTransformer(BaseEstimator, TransformerMixin):
     def preprocess(self,sentence):
@@ -20,3 +22,12 @@ class PreProccesingTransformer(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
         return self
+
+class Classifier(nn.Module):
+    def __init__(self, model_name, num_classes):
+        super(Classifier, self).__init__()
+        self.bert = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=num_classes)
+
+    def forward(self, input_ids, attention_mask):
+            outputs = self.bert(input_ids=input_ids, attention_mask=attention_mask)
+            return outputs
