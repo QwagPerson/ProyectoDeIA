@@ -55,6 +55,11 @@ async def handle_webhook_request(request: WebhookRequest):
     for x in request.entry:
         logger_error.debug(f"Entry: {x}")
 
+    user_name = request.entry[0].changes[0].value.contacts[0].profile.name
+    logger_error.debug(f"Hola {user_name}")
+    user_id = request.entry[0].changes[0].value.messages[0].from_
+    logger_error.debug(f"Tu numero de celular es {user_id}")
+
     # A partir de la request obtener el numero de telefono y el nombre del usuario
     # Crear un bot con el numero de telefono y el nombre del usuario o cargarlo de la lista de bots
 
