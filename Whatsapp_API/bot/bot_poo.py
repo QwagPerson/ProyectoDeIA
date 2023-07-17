@@ -2,8 +2,17 @@
 from mtranslate import translate
 import datefinder
 import datetime
-import torch
-from torch import nn
+from model_connector.classifier_handler import ClassifierHandler
+import os
+import dotenv
+
+# load the environment variables
+load_env = dotenv.load_dotenv(dotenv_path=f"../config_files/.env.dev")
+
+classifier_handler = ClassifierHandler(
+    model_url=os.environ.get('CLASSIFIER_APP_URL'),
+    model_secret_key=os.environ.get('CLASSIFIER_APP_KEY')
+)
 
 
 # Using the function to translate spanish to english
@@ -45,49 +54,36 @@ def transform_date_string(date_string):
     return date_
 
 
-def make_pred(data, model, tokenizer, device):
-    sf = nn.Softmax(dim=1)
-    tokenizer_result = tokenizer(data)
-    input_ids = torch.tensor(tokenizer_result["input_ids"]).to(device)
-    attention_mask = torch.tensor(tokenizer_result["attention_mask"]).to(device)
-    outputs = sf(model(input_ids, attention_mask).logits)
-    return torch.argmax(outputs, dim=1)
-
-
 class Bot:
-    def __init__(self, user_ID, user_name, model, tokenizer, device):
+    def __init__(self, user_ID, user_name):
         self.user_ID = user_ID
         self.user_name = user_name
         """
-        -10:error
-        -1 : init
-        0 : asistir
-        1 : cancelar
-        2: reagendar
-        3: agendar
-        4: call center
-        5: esperando_confirmacion
+        -10  : error
+         -1  : init
+          0  : asistir
+          1  : cancelar
+          2  : reagendar
+          3  : agendar
+          4  : call center
+          5  : esperando_confirmacion
         """
+
         self.state = -1
         self.action_stage = 'init'
         self.error_count = 0
 
-        self.model = model
-        self.tokenizer = tokenizer
-        self.device = device
-
         self.last_sms = ''
 
-        # Try to clasify the first sms
         print(f'Buenos días {user_name}. Soy el BOT de la MUNI')
 
     """
     clasify the sms with the model
     """
 
-    def clasify(self, text):
-        label = make_pred([text], self.model, self.tokenizer, self.device)
-        # label = int(text)
+    async def clasify(self, text):
+        label = await classifier_handler.predict(text)
+
         if label == 4:
             self.error_count += 1
 
@@ -166,7 +162,7 @@ class Bot:
 
     def user_confirmation(self, text):
         if text == 'yes':
-            [self.last_sms, self.state]
+            # [self.last_sms, self.state]
 
             self.action_stage = 'User Confirmed'
             self.error_count = 0
@@ -179,9 +175,9 @@ class Bot:
     Method to control the actions    
     """
 
-    def action(self, text):
+    async def action(self, text):
         if self.action_stage == 'init':
-            self.clasify(text)
+            await self.clasify(text)
 
         elif self.action_stage == 'Por confirmar' and self.state == 'Asistencia':
             if self.user_confirmation(text):
@@ -266,48 +262,3 @@ class Bot:
         self.action_stage = 'Buscar hora'
 
 
-def test_call():
-    botcito = Bot("123", "Nahuel", 'model')
-
-    input()
-
-    botcito.action('4')
-
-    input()
-
-    botcito.action('4')
-
-    input()
-
-    botcito.action('4')
-
-
-def test_select_label():
-    botcito = Bot("123", "Nahuel", 'model')
-
-    input()
-    botcito.action('1')
-
-    input()
-    botcito.action('yes')
-
-
-def test_select_date():
-    botcito = Bot("123", "Nahuel", 'model')
-
-    input()
-    botcito.action('2')
-
-    input()
-    botcito.action('yes')
-
-    input()
-    botcito.action('Me gustaría el lunes 17')
-
-
-def final():
-    botcito = Bot("123", "Nahuel", 'model')
-
-    while botcito.action_stage != 'end':
-        x = input('Val: ')
-        botcito.action(x)
