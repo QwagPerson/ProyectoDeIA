@@ -5,6 +5,7 @@ def crear_tabla_usuarios():
     sql = '''
     CREATE TABLE USUARIOS(
         ID_USUARIO INTEGER NOT NULL,
+        NUMERO VARCHAR(18)
         ID_HORA DATETIME,
         PRIMARY KEY(ID_USUARIO AUTOINCREMENT)
     )
@@ -46,8 +47,8 @@ def borrar_tabla():
 
 def guardar_usuario(id_user,id_hour):
     conexion = ConexionDB()
-    sql = '''
-    INSERT INTO USUARIOS VALUES ()
+    sql = f'''
+    INSERT INTO USUARIOS VALUES ({id_user},{id_hour})
     '''
     try:
         conexion.cursor.execute(sql)
