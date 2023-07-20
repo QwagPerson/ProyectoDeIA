@@ -2,7 +2,7 @@
 from mtranslate import translate
 import datefinder
 import datetime
-from model_connector.classifier_handler import ClassifierHandler
+from .model_connector.classifier_handler import ClassifierHandler
 import os
 import dotenv
 

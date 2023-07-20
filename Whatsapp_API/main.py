@@ -4,31 +4,9 @@ from fastapi.responses import Response
 import dotenv
 import os
 import logging
-import torch
-from whatsapp_message_controller.data_models import WebhookRequest
+from bot.whatsapp_connector.data_models import WebhookRequest
 from bot.bot_poo import Bot
 
-
-# Temp stuff must be refactored
-# Load Model And tokenizer
-def load_model(model_path, device):
-    modelo = torch.load(model_path, map_location=device)
-    return modelo
-
-
-def load_tokenizer(tokenizer_path, device):
-    tokenizer = torch.load(tokenizer_path, map_location=device)
-    return tokenizer
-
-
-script_path = os.path.abspath(__file__)
-script_dir = os.path.dirname(script_path)
-print(script_dir)
-
-device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-print("Using device:", device)
-MODEL = load_model(f'{script_dir}\\model_beto.pt', device)
-TOKENIZER = load_tokenizer(f'{script_dir}\\tokenizer_beto.pt', device)
 
 # Loading the environment variables
 load_env = dotenv.load_dotenv(dotenv_path=f"config_files/.env.{os.environ.get('ENVIRONMENT')}")
@@ -83,7 +61,7 @@ async def handle_webhook_request(request: WebhookRequest):
 
     if user_id not in current_bots.keys():
         logger_error.debug(f"Creating new bot for user {user_id}")
-        current_bots[user_id] = Bot(user_id, user_name, MODEL, TOKENIZER, device)
+        current_bots[user_id] = Bot(user_id, user_name)
 
     bot = current_bots[user_id]
 
