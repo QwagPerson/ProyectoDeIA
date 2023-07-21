@@ -5,6 +5,7 @@ import dotenv
 import os
 import logging
 from bot.whatsapp_connector.data_models import WebhookRequest
+from bot.whatsapp_connector.message_controller import send_text_msg, send_interactive_msg
 from bot.bot_poo import Bot
 
 
@@ -66,10 +67,20 @@ async def handle_webhook_request(request: WebhookRequest):
     bot = current_bots[user_id]
 
     # A partir de cada cambio extraigo el tipo de mensaje y lo aplico al bot
+    msg_type = request.entry[0].changes[0].value.messages[0].type
 
-    # parseo
-    # await bot.action('asdsa')
-
-    # bot.state != "-10"
+    if msg_type == "text":
+        # Sacamos el texto de la response
+        text = request.entry[0].changes[0].value.messages[0].text.body
+        logger_error.debug(f"Received text: {text} from user {user_id}")
+        bot.action(text)
+    elif msg_type == "interactive":
+        # Sacamos el valor de la respuesta
+        payload = request.entry[0].changes[0].value.messages[0].interactive.button_reply.id_
+        logger_error.debug(f"Received payload: {payload} from user {user_id}")
+        bot.action(payload)
+    else:
+        logger_error.debug(f"Received message of type {msg_type} from user {user_id}")
+        send_text_msg(user_id, "No entiendo tu mensaje TROLLAZO")
 
     return Response(status_code=204)

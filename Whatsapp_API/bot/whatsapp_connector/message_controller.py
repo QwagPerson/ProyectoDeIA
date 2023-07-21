@@ -92,11 +92,3 @@ async def send_interactive_msg(
     async with httpx.AsyncClient() as client:
         r = await client.post(API_URL, data=data, headers=headers)
     return r
-
-
-async def dispatch_messages(request, func):
-    for entry in request.entry:
-        for change in entry.changes:
-            value = change.value
-            for message in value.messages:
-                await func(message)
