@@ -28,21 +28,23 @@ async def send_text_msg(
     :param msg: The message to send.
     :return: The response from the Whatsapp API.
     """
-    logger_error.debug(f"Sending text message to {to}: {msg}")
-
+    logger_error.debug(f"Sending message to {to}: {msg}")
     data = {
         "messaging_product": "whatsapp",
         "to": to,
         "type": "text",
         "text": {"body": msg},
     }
-
     headers = {
         "Content-Type": "application/json",
     }
+    api_url = f"https://graph.facebook.com/v17.0/{PHONE_NUMBER_ID}/messages?access_token={WHATSAPP_TOKEN}"
 
     async with httpx.AsyncClient() as client:
-        r = await client.post(API_URL, data=data, headers=headers)
+        r = await client.post(api_url, data=data, headers=headers)
+    logger_error.debug(f"Response: {r}")
+    logger_error.debug(f"Response code: {r.status_code}")
+    logger_error.debug(f"Response text: {r.text}")
     return r
 
 
