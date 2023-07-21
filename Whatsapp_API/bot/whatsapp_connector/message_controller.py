@@ -75,17 +75,18 @@ async def send_interactive_msg(
             "body": {
                 "text": msg
             }
-        },
-        "action": {
-            "buttons": [
-                {
-                    "type": "reply",
-                    "reply": {
-                        "id": reply_id,
-                        "title": title
-                    }
-                } for reply_id, title in quick_replies
-            ]
+            ,
+            "action": {
+                "buttons": [
+                    {
+                        "type": "reply",
+                        "reply": {
+                            "id": reply_id,
+                            "title": title
+                        }
+                    } for reply_id, title in quick_replies
+                ]
+            }
         }
     }
 
