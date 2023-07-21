@@ -145,23 +145,35 @@ class Bot:
 
     async def manage_states(self):
         if self.state == 0:
-            await send_text_msg(self.user_ID,
-                                'Veo que quieres confirmar asistencia.')
+            await send_interactive_msg(
+                self.user_ID,
+                '¿Quieres confirmar asistencia?',
+                [('yes', 'Si'), ('no', 'No')]
+            )
             self.state = 'Asistencia'
 
         elif self.state == 1:
-            await send_text_msg(self.user_ID,
-                                'Veo que quieres cancelar')
+            await send_interactive_msg(
+                self.user_ID,
+                '¿Quieres cancelar tu hora?',
+                [('yes', 'Si'), ('no', 'No')]
+            )
             self.state = 'Cancelar'
 
         elif self.state == 2:
-            await send_text_msg(self.user_ID,
-                                'Veo que quieres reagendar la hora')
+            await send_interactive_msg(
+                self.user_ID,
+                '¿Quieres reagendar tu hora?',
+                [('yes', 'Si'), ('no', 'No')]
+            )
             self.state = 'Reagendar'
 
         elif self.state == 3:
-            await send_text_msg(self.user_ID,
-                                'Veo que quieres agendar la hora')
+            await send_interactive_msg(
+                self.user_ID,
+                '¿Quieres agendar una hora?',
+                [('yes', 'Si'), ('no', 'No')]
+            )
             self.state = 'Agendar'
 
         self.action_stage = 'Por confirmar'
