@@ -66,6 +66,9 @@ async def handle_webhook_request(request: WebhookRequest):
 
     bot = current_bots[user_id]
 
+    if bot.state == -1:
+        await bot.saluo()
+
     # A partir de cada cambio extraigo el tipo de mensaje y lo aplico al bot
     msg_type = request.entry[0].changes[0].value.messages[0].type
 
