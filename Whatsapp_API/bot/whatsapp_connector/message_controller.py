@@ -76,15 +76,17 @@ async def send_interactive_msg(
                 "text": msg
             }
         },
-        "buttons": [
-            {
-                "type": "reply",
-                "reply": {
-                    "id": reply_id,
-                    "title": title
-                }
-            } for reply_id, title in quick_replies
-        ]
+        "action": {
+            "buttons": [
+                {
+                    "type": "reply",
+                    "reply": {
+                        "id": reply_id,
+                        "title": title
+                    }
+                } for reply_id, title in quick_replies
+            ]
+        }
     }
 
     headers = {
@@ -93,4 +95,9 @@ async def send_interactive_msg(
 
     async with httpx.AsyncClient() as client:
         r = await client.post(API_URL, data=data, headers=headers)
+
+    logger_error.debug(f"Response: {r}")
+    logger_error.debug(f"Response code: {r.status_code}")
+    logger_error.debug(f"Response text: {r.text}")
+
     return r
