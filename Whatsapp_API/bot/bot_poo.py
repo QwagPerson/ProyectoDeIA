@@ -5,7 +5,7 @@ import datetime
 from .model_connector.classifier_handler import ClassifierHandler
 import os
 import dotenv
-from whatsapp_connector.message_controller import send_text_msg, send_interactive_msg
+from .whatsapp_connector.message_controller import send_text_msg, send_interactive_msg
 
 # load the environment variables
 load_env = dotenv.load_dotenv(dotenv_path=f"../config_files/.env.dev")
