@@ -37,6 +37,33 @@ class UnknownMessage(BaseModel):
     details: str
     title: str
 
+class ButtonReply(BaseModel):
+    id_: str
+    title: str
+
+    class Config:
+        fields = {
+            'id_': 'id'
+        }
+
+class InteractiveMessage(BaseModel):
+    type_: str
+    button_reply: ButtonReply
+
+    class Config:
+        fields = {
+            'type_': 'type'
+        }
+
+class Context(BaseModel):
+    from_: str
+    id_: str
+
+    class Config:
+        fields = {
+            'from_': 'from',
+            'id_': 'id'
+        }
 
 class Message(BaseModel):
     from_: str
@@ -47,6 +74,9 @@ class Message(BaseModel):
     text: TextMessage = None
     reaction: ReactionMessage = None
     image: ImageMessage = None
+    interactive: InteractiveMessage = None
+    context: Context = None
+
 
     class Config:
         fields = {
