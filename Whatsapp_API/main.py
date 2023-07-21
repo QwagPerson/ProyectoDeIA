@@ -73,7 +73,6 @@ async def handle_webhook_request(request: WebhookRequest):
         # Sacamos el texto de la response
         text = request.entry[0].changes[0].value.messages[0].text.body
         logger_error.debug(f"Received text: {text} from user {user_id}")
-        await send_text_msg(user_id, "No entiendo tu mensaje TROLLAZO")
         await bot.action(text)
     elif msg_type == "interactive":
         # Sacamos el valor de la respuesta

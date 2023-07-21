@@ -5,6 +5,7 @@ import datetime
 from .model_connector.classifier_handler import ClassifierHandler
 import os
 import dotenv
+from whatsapp_connector.message_controller import send_text_msg, send_interactive_msg
 
 # load the environment variables
 load_env = dotenv.load_dotenv(dotenv_path=f"../config_files/.env.dev")
@@ -75,7 +76,7 @@ class Bot:
 
         self.last_sms = ''
 
-        print(f'Buenos días {user_name}. Soy el BOT de la MUNI')
+        await send_text_msg(self.user_ID, f'Buenos días {user_name}. Soy el BOT de la MUNI')
 
     """
     clasify the sms with the model
