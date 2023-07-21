@@ -1,4 +1,4 @@
-from database import Base
+from .database import Base
 
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.orm import relationship
@@ -21,7 +21,7 @@ class Hour(Base):
     id_hour = Column(Integer, primary_key=True, index=True)
     time = Column(DateTime, index=True)
     address = Column(String)
-    owner_id = Column(Integer, ForeignKey("users.id"))
+    owner_id = Column(Integer, ForeignKey("users.id_user"))
     confirm = Column(Boolean, default=False)
 
     owner = relationship("User", back_populates="hours", uselist=False)

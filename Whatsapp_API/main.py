@@ -8,6 +8,11 @@ from bot.whatsapp_connector.data_models import WebhookRequest
 from bot.whatsapp_connector.message_controller import send_text_msg, send_interactive_msg
 from bot.bot_poo import Bot
 
+from fastapi import Depends, FastAPI, HTTPException
+from sqlalchemy.orm import Session
+
+from bot.database_model import database_models, schemas, DB_CRUD
+from bot.database_model.database import SessionLocal, engine
 
 # Loading the environment variables
 load_env = dotenv.load_dotenv(dotenv_path=f"config_files/.env.{os.environ.get('ENVIRONMENT')}")
@@ -27,10 +32,41 @@ logger_error = logging.getLogger(os.environ.get('ERROR_LOGGER'))  # Logger for e
 
 current_bots = {}
 
+# Initializing the database
+database_models.Base.metadata.create_all(bind=engine)
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# Generate a random string and hash it
+import secrets
+import hashlib
+#
+
+def generate_random_string():
+    return secrets.token_hex(16)
+
+def generate_random_integer():
+    return secrets.randbelow(1000000000)
 
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
+    # Create a user in the database
+    db = SessionLocal()
+    DB_CRUD.create_user(db, schemas.UserCreate(name=generate_random_integer(), cellphone=generate_random_string(), gender=generate_random_string()))
+    db.close()
+
+    # Read the user from the database
+    db = SessionLocal()
+    user = DB_CRUD.get_user(db, id_user=1)
+    db.close()
+
+    return {"User": f"{user.name} with {user.cellphone} and {user.gender}"}  # Return the user
 
 
 @app.get("/webhook")

@@ -4,10 +4,12 @@ import datetime
 
 class HourBase(BaseModel):
     address: str
-    time: datetime
+    time: datetime.datetime
+
 
 class HourCreate(HourBase):
     pass
+
 
 class Hour(HourBase):
     id_hour: int
@@ -22,8 +24,10 @@ class UserBase(BaseModel):
     name: str
     gender: str
 
+
 class UserCreate(UserBase):
     cellphone: str
+
 
 class User(UserBase):
     id_user: int

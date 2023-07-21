@@ -15,6 +15,22 @@ classifier_handler = ClassifierHandler(
     model_secret_key=os.environ.get('CLASSIFIER_APP_KEY')
 )
 
+dates = [datetime.date.today() + datetime.timedelta(days=i) for i in range(31)]
+dates = [date.strftime("%d-%m-%Y") for date in dates]
+
+hours = ["9:00", "10:00", "11:00", "12:00", "13:00", "14:00"]
+
+# Create a dictionary with the dates and hours available
+DB = {}
+for date in dates:
+    DB[date] = {}
+    for hour in hours:
+        DB[date][hour] = {
+            "available": True,
+            "owner": None,
+            "confirmed": False
+        }
+
 
 # Using the function to translate spanish to english
 def sp_to_en(sentence):
@@ -247,29 +263,65 @@ class Bot:
     """
     Connection to DDBB to confirm hour
     """
+
     async def confirm_hour(self):
+        # loop through db searching for an hour with the same ID
         await send_text_msg(self.user_ID,
                             "Confirmando hora...")
-        self.action_stage = 'end'
+        for day in DB.keys():
+            day_hours = DB[day]
+            for an_hour in day_hours.keys():
+                hour_info = hours[an_hour]
+                if hour_info['ID'] == self.user_ID:
+                    hour_info['confirmed'] = True
+                    await send_text_msg(self.user_ID,
+                                        "Hora confirmada exitosamente!")
+                    self.action_stage = 'init'
+                    return
 
     """
     Connection to DDBB to cancel hour
     """
+
     async def cancel_hour(self):
+        # loop through db searching for an hour with the same ID
         await send_text_msg(self.user_ID,
                             "Cancelando hora...")
+        for day in DB.keys():
+            day_hours = DB[day]
+            for an_hour in day_hours.keys():
+                hour_info = hours[an_hour]
+                if hour_info["ID"] == self.user_ID:
+                    hour_info['ID'] = None
+                    hour_info['confirmed'] = False
+                    await send_text_msg(self.user_ID,
+                                        "Hora cancelada exitosamente!")
+                    self.action_stage = 'init'
+                    return
         self.action_stage = 'end'
 
     """
     reschedule an hour
     """
+
     async def set_reschedule(self):
         '''
         Obtenemos la hora del usuario
         '''
         await send_text_msg(self.user_ID,
-                            'Usted tiene una hora agendada para el día DD-MM-YYYY')
-
+                            'Consultando horas agendadas en la base de datos...')
+        flag = False
+        for day in DB.keys():
+            if flag:
+                break
+            day_hours = DB[day]
+            for an_hour in day_hours.keys():
+                hour_info = hours[an_hour]
+                if hour_info["ID"] == self.user_ID:
+                    await send_text_msg(self.user_ID,
+                                        f"Su hora agendada es: {hour_info['hour']} del día {day}")
+                    flag = True
+                    break
         await send_text_msg(self.user_ID,
                             'Indique la nueva fecha')
 
