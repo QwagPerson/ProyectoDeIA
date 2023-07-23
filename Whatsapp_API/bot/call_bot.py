@@ -9,7 +9,7 @@ AMBIENT = "dev"
 load_env = dotenv.load_dotenv(dotenv_path=f"../config_files/.env.{AMBIENT}")
 
 if __name__ == "__main__":
-    botcito = Bot('123', 'Nahuel', )
+    botcito = Bot('966268841', 'Nahuel', )
     while botcito.action_stage != 'end':
         x = input('Val: ')
         asyncio.run(botcito.action(x))

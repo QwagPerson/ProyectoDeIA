@@ -28,6 +28,7 @@ async def send_text_msg(
     :param msg: The message to send.
     :return: The response from the Whatsapp API.
     """
+    print(f'MENSAJE : {msg}')
     logger_error.debug(f"Sending message to {to}: {msg}")
     data = {
         "messaging_product": "whatsapp",
@@ -60,7 +61,8 @@ async def send_interactive_msg(
     :param quick_replies: A list of tuples with the reply_id and the title of the button.
     :return: The response from the Whatsapp API.
     """
-
+    print(f'MENSAJE : {msg}')
+    print(f'Options : {quick_replies}')
     logger_error.debug(f"""
                        Sending interactive message to {to}: {msg}
                        With quick replies: {quick_replies}

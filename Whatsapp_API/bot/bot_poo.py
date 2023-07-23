@@ -2,10 +2,10 @@
 from mtranslate import translate
 import datefinder
 import datetime
-from .model_connector.classifier_handler import ClassifierHandler
+from model_connector.classifier_handler import ClassifierHandler
 import os
 import dotenv
-from .whatsapp_connector.message_controller import send_text_msg, send_interactive_msg
+from whatsapp_connector.message_controller import send_text_msg, send_interactive_msg
 
 # load the environment variables
 load_env = dotenv.load_dotenv(dotenv_path=f"../config_files/.env.dev")
@@ -15,10 +15,12 @@ classifier_handler = ClassifierHandler(
     model_secret_key=os.environ.get('CLASSIFIER_APP_KEY')
 )
 
-dates = [datetime.date.today() + datetime.timedelta(days=i) for i in range(31)]
+dates = [datetime.date.today() + datetime.timedelta(days=i) for i in range(7)]
 dates = [date.strftime("%d-%m-%Y") for date in dates]
 
-hours = ["9:00", "10:00", "11:00", "12:00", "13:00", "14:00"]
+# option1, option2 or option3
+hours = ["10:00", "12:30", "14:00"]
+
 
 # Create a dictionary with the dates and hours available
 DB = {}
@@ -27,9 +29,15 @@ for date in dates:
     for hour in hours:
         DB[date][hour] = {
             "available": True,
-            "owner": None,
+            "ID": None,
             "confirmed": False
         }
+
+
+# To testing, add keys
+DB['24-07-2023']['10:00'] = {'available': False, 'ID': '966268841', 'confirmed': False}
+DB['24-07-2023']['12:30'] = {'available': False, 'ID': '111111111', 'confirmed': True}
+DB['24-07-2023']['14:00'] = {'available': False, 'ID': '999999999', 'confirmed': True}
 
 
 # Using the function to translate spanish to english
@@ -47,7 +55,7 @@ def extract_dates(text):
 
 def transform_date_string(date_string):
     # Parse the input string as a datetime object
-    date = datetime.strptime(date_string, '%d-%m-%Y')
+    date = datetime.datetime.strptime(date_string, '%d-%m-%Y')
 
     # Format the output string as "DAY NAME dd-mm-yyyy"
     day_name = date.strftime('%A')
@@ -91,6 +99,8 @@ class Bot:
         self.error_count = 0
 
         self.last_sms = ''
+        self.last_day = ''
+        self.hours = [None]
 
     async def saluo(self):
         await send_text_msg(self.user_ID, f'Buenos días {self.user_name}. Soy el BOT de la MUNI')
@@ -137,9 +147,14 @@ class Bot:
 
             # Extraction of the date
             date = extract_dates(text_translated)
+            #print(f'{text} -- {text_translated} -- {date}')
             date_name = transform_date_string(date)
-            await send_text_msg(self.user_ID,
-                                f'Entiendo que quiere una hora para {date_name}')
+            self.last_day = date
+            await send_interactive_msg(
+                self.user_ID,
+                f'Entiendo que quiere una hora para {date_name}',
+                [('yes', 'Si'), ('no', 'No')]
+            )
 
             self.action_stage = 'Por confirmar hora'
 
@@ -243,6 +258,15 @@ class Bot:
             else:
                 await self.ask_hour(text)
 
+        elif self.action_stage == 'seleccionando hora':
+            #print(f'text: {type(text)} -- {text}')
+            if text == '0':
+                self.action_stage = 'Buscar hora'
+                await send_text_msg(self.user_ID,
+                                    f'Por favor Indique el nuevo dia')
+            else:
+                await self.add_hour_user(int(text))
+
         # User Denied the clasification
         if self.action_stage == 'User Denied':
             self.state = -1
@@ -255,10 +279,49 @@ class Bot:
                 await send_text_msg(self.user_ID,
                                     f'Por favor sea mas explicito con lo que desea realizar')
 
+    async def add_hour_user(self, pos):
+        """
+        add the user with the last day-hoy saved
+        """
+        # Iterate over the BD and save the user with the 
+        # day and hour selected
+
+        DB[self.last_day][self.hours[pos]]['available'] = False
+        DB[self.last_day][self.hours[pos]]['ID'] = self.user_ID
+
+        await send_text_msg(self.user_ID,
+                            f"Se ha reservado correctamente su hora para el día {self.last_day} a las {self.hours[pos]}")
+
+        self.action_stage = 'init'
+
+
+
     async def manage_hour(self):
         await send_text_msg(self.user_ID,
                             'Buscando Disponibilidad de ese dia')
-        self.action_stage = 'end'
+
+        try:
+            day_hours = DB[self.last_day]
+            opt = 1
+            l_hours = []
+            for an_hour in day_hours.keys():
+                hour_info = day_hours[an_hour]
+                                 
+                print(f'{an_hour} -- {hour_info}')
+                if hour_info['available'] == True:   
+                    l_hours.append((opt,an_hour))
+                    self.hours.append(an_hour)
+                    opt+=1
+        except:
+            print('EASTEREGG JAJAJAJ')
+        
+        l_hours.append((0, 'Buscar Otra fecha'))
+        await send_interactive_msg(
+                self.user_ID,
+                'A continuación se muestran las horas disponibles',
+                l_hours
+            )
+        self.action_stage = 'seleccionando hora'
 
     """
     Connection to DDBB to confirm hour
@@ -271,13 +334,18 @@ class Bot:
         for day in DB.keys():
             day_hours = DB[day]
             for an_hour in day_hours.keys():
-                hour_info = hours[an_hour]
+                hour_info = day_hours[an_hour]
+
                 if hour_info['ID'] == self.user_ID:
                     hour_info['confirmed'] = True
                     await send_text_msg(self.user_ID,
-                                        "Hora confirmada exitosamente!")
+                                        f"Hora confirmada exitosamente! para el día {day} a las {an_hour}")
                     self.action_stage = 'init'
                     return
+
+        await send_text_msg(self.user_ID,
+                            "No tienes horas reservadas")
+        self.action_stage = 'init'
 
     """
     Connection to DDBB to cancel hour
@@ -290,15 +358,15 @@ class Bot:
         for day in DB.keys():
             day_hours = DB[day]
             for an_hour in day_hours.keys():
-                hour_info = hours[an_hour]
+                hour_info = day_hours[an_hour]
                 if hour_info["ID"] == self.user_ID:
                     hour_info['ID'] = None
                     hour_info['confirmed'] = False
+                    hour_info['available'] = True
                     await send_text_msg(self.user_ID,
                                         "Hora cancelada exitosamente!")
                     self.action_stage = 'init'
                     return
-        self.action_stage = 'end'
 
     """
     reschedule an hour
