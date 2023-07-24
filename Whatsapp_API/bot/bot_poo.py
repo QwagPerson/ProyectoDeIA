@@ -35,9 +35,9 @@ for date in dates:
 
 
 # To testing, add keys
-DB['24-07-2023']['10:00'] = {'available': False, 'ID': '966268841', 'confirmed': False}
-DB['24-07-2023']['12:30'] = {'available': False, 'ID': '111111111', 'confirmed': True}
-DB['24-07-2023']['14:00'] = {'available': False, 'ID': '999999999', 'confirmed': True}
+DB['25-07-2023']['10:00'] = {'available': False, 'ID': '966268842', 'confirmed': False}
+DB['25-07-2023']['12:30'] = {'available': False, 'ID': '111111111', 'confirmed': True}
+DB['25-07-2023']['14:00'] = {'available': False, 'ID': '999999999', 'confirmed': True}
 
 
 # Using the function to translate spanish to english
@@ -307,7 +307,7 @@ class Bot:
             for an_hour in day_hours.keys():
                 hour_info = day_hours[an_hour]
                                  
-                print(f'{an_hour} -- {hour_info}')
+                #print(f'{an_hour} -- {hour_info}')
                 if hour_info['available'] == True:   
                     l_hours.append((opt,an_hour))
                     self.hours.append(an_hour)
@@ -367,7 +367,8 @@ class Bot:
                                         "Hora cancelada exitosamente!")
                     self.action_stage = 'init'
                     return
-
+        await send_text_msg(self.user_ID,
+                                        "Usted no tiene horas agendadas")
     """
     reschedule an hour
     """
@@ -378,22 +379,26 @@ class Bot:
         '''
         await send_text_msg(self.user_ID,
                             'Consultando horas agendadas en la base de datos...')
-        flag = False
+        
         for day in DB.keys():
-            if flag:
-                break
             day_hours = DB[day]
             for an_hour in day_hours.keys():
-                hour_info = hours[an_hour]
-                if hour_info["ID"] == self.user_ID:
-                    await send_text_msg(self.user_ID,
-                                        f"Su hora agendada es: {hour_info['hour']} del día {day}")
-                    flag = True
-                    break
-        await send_text_msg(self.user_ID,
-                            'Indique la nueva fecha')
+                hour_info = day_hours[an_hour]
 
-        self.action_stage = 'Buscar hora'
+                if hour_info['ID'] == self.user_ID:
+                    hour_info['confirmed'] = True
+                    await send_text_msg(self.user_ID,
+                                        f"Su hora actual es para el día {day} a las {an_hour}")
+                    
+                    # delete the hour
+                    hour_info['ID'] = None
+                    hour_info['confirmed'] = False
+                    hour_info['available'] = True
+                    
+                    await send_text_msg(self.user_ID,
+                                        f"Indique un día para ver disponibilidad")
+                    self.action_stage = 'Buscar hora'
+                    return
 
     """
     schedule an hour
